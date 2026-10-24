@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>خطوط المجال الكهربائي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- MathJax: \( ... \) و $ ... $ -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+  :root {
+    --primary-blue: #1e3a8a;
+    --blue-600: #2563eb;
+    --teal: #0d9488;
+    --teal-dark: #0f766e;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --ok: #16a34a;
+    --ok-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+    background: linear-gradient(180deg, #e0f2fe 0%, var(--bg) 260px);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+  .container { max-width: 820px; margin: 0 auto; padding: 16px 14px 48px; }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    background: linear-gradient(135deg, var(--primary-blue), var(--teal));
+    color: #fff;
+    border-radius: 18px;
+    padding: 22px 18px;
+    text-align: center;
+    box-shadow: 0 10px 24px rgba(30, 58, 138, .25);
+    margin-bottom: 18px;
+  }
+  .site-header h1 { margin: 0 0 4px; font-size: 1.7rem; font-weight: 800; }
+  .site-header p { margin: 0; opacity: .92; font-size: .95rem; }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 16px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, .05);
+  }
+  .hidden { display: none !important; }
+
+  /* ---------- Login ---------- */
+  #login-section { max-width: 440px; margin: 28px auto 0; text-align: center; }
+  #login-section h2 { margin: 0 0 6px; color: var(--primary-blue); font-size: 1.3rem; }
+  #login-section p.sub { margin: 0 0 18px; color: var(--muted); font-size: .92rem; }
+  .field {
+    width: 100%;
+    padding: 13px 14px;
+    font: inherit;
+    font-size: 1.1rem;
+    text-align: center;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    outline: none;
+    background: #f8fafc;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field:focus { border-color: var(--blue-600); box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); background: #fff; }
+  .btn {
+    display: inline-block;
+    width: 100%;
+    margin-top: 14px;
+    padding: 13px 16px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary-blue), var(--blue-600));
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform .08s, opacity .15s;
+  }
+  .btn:active { transform: scale(.985); }
+  .btn:disabled { opacity: .6; cursor: not-allowed; }
+  .btn.teal { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); }
+  #login-error { color: var(--bad); font-weight: 700; min-height: 1.6em; margin-top: 12px; }
+
+  /* ---------- Exam top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, .96);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .08);
+  }
+  #welcome { font-weight: 700; color: var(--primary-blue); font-size: 1rem; }
+  .timer {
+    direction: ltr;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    color: var(--teal-dark);
+    background: #ccfbf1;
+    padding: 4px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .progress { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin: -4px 4px 14px; }
+  .progress > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--teal), var(--blue-600)); transition: width .25s; }
+
+  /* ---------- Result banner ---------- */
+  #result-banner {
+    text-align: center;
+    color: #fff;
+    border-radius: 18px;
+    padding: 22px 16px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--teal));
+    box-shadow: 0 10px 24px rgba(30, 58, 138, .25);
+  }
+  #result-banner .label { opacity: .9; font-size: .95rem; }
+  #result-banner .score { font-size: 2.6rem; font-weight: 800; line-height: 1.3; direction: ltr; }
+  #result-banner .pct { font-size: 1.05rem; font-weight: 700; }
+  #sync-status { margin-top: 10px; font-size: .92rem; background: rgba(255,255,255,.18); display: inline-block; padding: 4px 14px; border-radius: 99px; }
+  #retry-btn { margin-top: 10px; width: auto; padding: 8px 18px; font-size: .95rem; background: #fff; color: var(--primary-blue); }
+
+  /* ---------- Questions ---------- */
+  .q-card { margin-bottom: 14px; scroll-margin-top: 80px; }
+  .q-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .q-num {
+    flex: none;
+    background: var(--primary-blue);
+    color: #fff;
+    font-weight: 800;
+    font-size: .85rem;
+    padding: 2px 12px;
+    border-radius: 99px;
+  }
+  .q-text { font-weight: 600; font-size: 1.03rem; }
+  .stmts { margin-top: 8px; font-weight: 400; display: grid; gap: 4px; }
+  .stmts b { color: var(--primary-blue); }
+  .q-img-wrap { text-align: center; margin: 10px 0 12px; }
+  .q-img-wrap img {
+    max-width: 100%;
+    max-height: 340px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: zoom-in;
+  }
+  .options { display: grid; gap: 8px; margin-top: 8px; }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    background: #f8fafc;
+    transition: border-color .12s, background .12s;
+  }
+  .opt:hover { border-color: #93c5fd; }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .opt .letter {
+    flex: none;
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: var(--primary-blue);
+    font-weight: 800;
+    font-size: .9rem;
+  }
+  .opt .otext { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; }
+  .opt .optimg { text-align: center; }
+  .opt .optimg img {
+    max-width: 100%;
+    max-height: 150px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .opt .missing { color: var(--muted); font-size: .85rem; }
+  .opt:has(input:checked) { border-color: var(--blue-600); background: #eff6ff; }
+  .opt:has(input:checked) .letter { background: var(--blue-600); color: #fff; }
+  .opt:has(input:focus-visible) { outline: 3px solid rgba(37, 99, 235, .35); }
+
+  .q-card.locked .opt { cursor: default; }
+  .q-card.locked .opt:hover { border-color: var(--border); }
+  .opt.correct { border-color: var(--ok) !important; background: var(--ok-bg) !important; }
+  .opt.correct .letter { background: var(--ok) !important; color: #fff !important; }
+  .opt.wrong { border-color: var(--bad) !important; background: var(--bad-bg) !important; }
+  .opt.wrong .letter { background: var(--bad) !important; color: #fff !important; }
+
+  .feedback { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: .95rem; }
+  .feedback.ok { background: var(--ok-bg); color: #14532d; }
+  .feedback.bad { background: var(--bad-bg); color: #7f1d1d; }
+  .feedback .fb-title { font-weight: 800; margin-bottom: 2px; }
+  .feedback .fb-explain { color: var(--text); }
+
+  .submit-wrap { margin-top: 8px; }
+  #submit-msg { text-align: center; color: var(--muted); margin-top: 8px; min-height: 1.5em; font-size: .92rem; }
+
+  mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+
+  /* ---------- Lightbox ---------- */
+  #lightbox {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(15, 23, 42, .88);
+    display: none; align-items: center; justify-content: center;
+    padding: 16px; cursor: zoom-out;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img { max-width: 100%; max-height: 100%; border-radius: 10px; background: #fff; }
+
+  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 26px; }
+
+  @media (min-width: 640px) {
+    .site-header h1 { font-size: 2.1rem; }
+    .card { padding: 24px 24px; }
+    .q-text { font-size: 1.1rem; }
+    .options.grid-img { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="site-header">
+    <h1>خطوط المجال الكهربائي</h1>
+    <p id="meta-line"></p>
+  </header>
+
+  <!-- ===================== تسجيل الدخول ===================== -->
+  <section id="login-section" class="card">
+    <h2>تسجيل الدخول للامتحان</h2>
+    <p class="sub">أدخل كود الطالب الخاص بك للبدء</p>
+    <input id="student-id" class="field" type="text" inputmode="numeric" autocomplete="off"
+           placeholder="كود الطالب (مثال: 18)" aria-label="كود الطالب">
+    <button id="login-btn" class="btn">تحقق ودخول</button>
+    <div id="login-error" role="alert"></div>
+  </section>
+
+  <!-- ===================== الامتحان ===================== -->
+  <section id="exam-section" class="hidden">
+    <div class="topbar">
+      <div id="welcome"></div>
+      <div class="timer" id="timer">00:00</div>
+    </div>
+    <div class="progress"><div id="progress-bar"></div></div>
+
+    <div id="result-banner" class="hidden"></div>
+
+    <div id="questions"></div>
+
+    <div class="submit-wrap">
+      <button id="submit-btn" class="btn teal">إنهاء الامتحان وإرسال النتيجة</button>
+      <div id="submit-msg"></div>
+    </div>
+  </section>
+
+  <footer>خطوط المجال الكهربائي • بالتوفيق للجميع</footer>
+</div>
+
+<div id="lightbox" aria-hidden="true"><img alt=""></div>
+
+<script>
+/* =====================================================================
+   الإعدادات
+   ===================================================================== */
+const EXAM_META = {
+  subject: "فيزياء",
+  module: "الكهروستاتيكية",
+  lesson: "اختبار على خطوط المجال الكهربائي (2.2)",
+  type: "اختبار"
+};
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSAFcPEXqQfaFu4P2x1XTgBNsWb_V7OA9AjW_5HBfKB17nL_YcY4iE58AH3bObx5k/exec";
+
+/* الصور داخل مجلد img — اسم الملف = رقم السؤال (مثل img/5.jpg)
+   وصور الخيارات: img/4a.png ، img/4b.png ، img/4c.png ، img/4d.png            */
+const IMG_DIR = "img";
+const IMG_EXTS = ["png", "jpg", "jpeg", "webp", "gif", "svg", "PNG", "JPG", "JPEG", "WEBP"];
+
+/* =====================================================================
+   بنك الأسئلة
+   img     = اسم ملف الشكل الرئيسي (بدون امتداد)
+   optImgs = أسماء ملفات صور الخيارات (إن كانت الخيارات صوراً)
+   tag     = نقطة الضعف التي تُسجَّل عند الخطأ
+   ===================================================================== */
+const QUESTIONS = [
+  {
+    label: "1", img: null, tag: "خصائص خطوط المجال الكهربائي",
+    text: String.raw`أي العبارات التالية صحيحة بالنسبة لخطوط المجال الكهربائي؟
+      <div class="stmts">
+        <div><b>(1)</b> تبدأ من الشحنات الموجبة وتنتهي عند الشحنات السالبة</div>
+        <div><b>(2)</b> لا تتقاطع</div>
+        <div><b>(3)</b> يكون اتجاه المجال الكهربائي مماساً لخطوط المجال عند أي نقطة</div>
+      </div>`,
+    options: [
+      "العبارة (1) فقط",
+      "العبارة (2) فقط",
+      "العبارة (3) فقط",
+      "العبارات (1) و (2) و (3) جميعها"
+    ],
+    answer: 3,
+    explain: "العبارات الثلاث صحيحة: الخطوط تخرج من الشحنات الموجبة وتدخل في السالبة، ولا تتقاطع أبداً (لأن للمجال اتجاهاً واحداً عند كل نقطة)، والمجال مماس لخط المجال عند أي نقطة."
+  },
+  {
+    label: "2", img: "2", tag: "تحديد نوع الشحنة من خطوط المجال",
+    text: "أي من الشحنات الموضحة في الشكل موجبة؟",
+    options: [
+      "الشحنة 1 فقط",
+      "الشحنة 2 فقط",
+      "الشحنتان 1 و 3",
+      "الشحنات الثلاث جميعها موجبة"
+    ],
+    answer: 1,
+    explain: "خطوط المجال تخرج من الشحنة الموجبة وتدخل في الشحنة السالبة. الأسهم تخرج من الشحنة 2 وتتجه نحو الشحنتين 1 و 3، وخطوط قادمة من بعيد تدخل فيهما، إذن الشحنة 2 موجبة والشحنتان 1 و 3 سالبتان."
+  },
+  {
+    label: "3", img: "3", tag: "خصائص المجال الكهروستاتيكي (الخطوط المغلقة ونقاط البدء)",
+    text: "إذا افترضنا أنه لا توجد شحنات في المناطق الأربع الموضحة في الشكل، فأي نمط يمكن أن يمثل مجالاً كهربائياً؟",
+    options: [
+      "النمط 1",
+      "النمط 2",
+      "النمطان 2 و 3",
+      "النمطان 1 و 4",
+      "لا يمثل أي من الأنماط مجالاً كهربائياً"
+    ],
+    answer: 1,
+    explain: "خطوط المجال الكهروستاتيكي لا تكوّن حلقات مغلقة، ولا تبدأ ولا تنتهي إلا عند الشحنات. النمط 1: الخطوط تلتقي في نقطة (أي توجد شحنة داخل المنطقة). النمط 3: خطوط مغلقة. النمط 4: بعض الخطوط تبدأ من منتصف المنطقة بلا شحنة. النمط 2: خطوط متوازية منتظمة (مجال منتظم) ويمكن أن يمثل مجالاً كهربائياً."
+  },
+  {
+    label: "4", img: null, optImgs: ["4a", "4b", "4c", "4d"], tag: "خطوط المجال بين شحنتين",
+    text: "أي الأشكال التالية تعرض خطوط المجال الكهربائي بين كرتين صغيرتين مشحونتين؟",
+    options: ["", "", "", ""],
+    answer: 3,
+    explain: "الشكل (د): كرتان موجبتان متماثلتان، فتخرج الخطوط من كل منهما إلى الخارج وتتنافر ولا تتصل ببعضها. في الشكل (أ) اتجاه الأسهم خطأ (من السالبة إلى الموجبة). في الشكل (ب) لا يمكن أن تتصل خطوط شحنتين متشابهتين. في الشكل (ج) الأسهم تخرج من شحنتين سالبتين وهذا خطأ (الخطوط تدخل في الشحنة السالبة)."
+  },
+  {
+    label: "5", img: "5", tag: "إشارة ومقدار الشحنة من خطوط المجال",
+    text: String.raw`التوزيع المكاني للمجال الكهربائي الناتج عن الشحنتين (<bdi>A</bdi> , <bdi>B</bdi>) موضح في الشكل. أي الاختيارات التالية صحيحة بالنسبة للشحنتين؟`,
+    options: [
+      String.raw`الشحنة <bdi>A</bdi> موجبة والشحنة <bdi>B</bdi> سالبة ، ومقدار \(A \lt B\)`,
+      String.raw`الشحنة <bdi>A</bdi> موجبة والشحنة <bdi>B</bdi> سالبة ، ومقدار \(A \gt B\)`,
+      String.raw`الشحنتان <bdi>A</bdi> و <bdi>B</bdi> موجبتان ، ومقدار \(A = B\)`,
+      String.raw`الشحنتان <bdi>A</bdi> و <bdi>B</bdi> سالبتان ، ومقدار \(A \gt B\)`
+    ],
+    answer: 1,
+    explain: "الخطوط تخرج من A وتدخل في B، إذن A موجبة و B سالبة. عدد الخطوط الخارجة من A أكبر من عدد الخطوط الداخلة إلى B (بعض خطوط A تذهب بعيداً ولا تنتهي عند B)، فمقدار A أكبر من مقدار B."
+  },
+  {
+    label: "6 (أ)", img: "6", tag: "اتجاه المجال الكهربائي من خطوط المجال",
+    text: String.raw`يظهر الشكل منظراً ثنائي الأبعاد لخطوط المجال الكهربائي الناتج من شحنتين مختلفتين في الإشارة. ما اتجاه المجال الكهربائي عند النقاط الخمس <bdi>A</bdi> ، <bdi>B</bdi> ، <bdi>C</bdi> ، <bdi>D</bdi> ، <bdi>E</bdi>؟`,
+    options: [
+      String.raw`<bdi>A</bdi> لأسفل ↓ ، <bdi>B</bdi> لأعلى ↑ ، <bdi>C</bdi> لأسفل ↓ ، <bdi>D</bdi> لأعلى ↑ ، <bdi>E</bdi> لأسفل ↓`,
+      String.raw`<bdi>A</bdi> لأعلى ↑ ، <bdi>B</bdi> لأسفل ↓ ، <bdi>C</bdi> لأعلى ↑ ، <bdi>D</bdi> لأسفل ↓ ، <bdi>E</bdi> لأعلى ↑`,
+      String.raw`<bdi>A</bdi> لأسفل ↓ ، <bdi>B</bdi> لأسفل ↓ ، <bdi>C</bdi> لأسفل ↓ ، <bdi>D</bdi> لأسفل ↓ ، <bdi>E</bdi> لأسفل ↓`,
+      String.raw`<bdi>A</bdi> لأعلى ↑ ، <bdi>B</bdi> لأعلى ↑ ، <bdi>C</bdi> لأعلى ↑ ، <bdi>D</bdi> لأعلى ↑ ، <bdi>E</bdi> لأسفل ↓`
+    ],
+    answer: 0,
+    explain: "الشحنة العليا موجبة (حمراء) والسفلى سالبة (زرقاء)، والمجال يخرج من الموجبة ويدخل في السالبة. عند E (بين الشحنتين) المجال لأسفل. عند B (فوق الموجبة) المجال لأعلى مبتعداً عنها، وعند D (تحت السالبة) المجال لأعلى متجهاً نحوها. وعند A و C (على جانبي الشحنتين) المجال لأسفل."
+  },
+  {
+    label: "6 (ب)", img: "6", tag: "مقدار المجال الكهربائي من كثافة الخطوط",
+    text: String.raw`في الشكل نفسه: عند أي النقاط الخمس يكون مقدار المجال الكهربائي أكبر؟`,
+    options: [
+      String.raw`النقطة <bdi>A</bdi>`,
+      String.raw`النقطة <bdi>B</bdi>`,
+      String.raw`النقطة <bdi>C</bdi>`,
+      String.raw`النقطة <bdi>D</bdi>`,
+      String.raw`النقطة <bdi>E</bdi>`
+    ],
+    answer: 4,
+    explain: "النقطة E تقع بين الشحنتين وقريبة منهما معاً، فمجالاً الشحنتين هناك في نفس الاتجاه ويتجمعان، وكثافة الخطوط عندها هي الأكبر؛ لذلك يكون المجال الأكبر عند E."
+  },
+  {
+    label: "7", img: "7", tag: "مقدار وإشارة الشحنتين من خطوط المجال",
+    text: "يبين الشكل خطوط المجال الكهربائي لنظام يتكون من شحنتين نقطيتين. أي التالية صحيحة بالنسبة للشحنتين؟",
+    options: [
+      String.raw`\(q_1=+32\,\mu\text{C}\) ، \(q_2=-16\,\mu\text{C}\)`,
+      String.raw`\(q_1=-32\,\mu\text{C}\) ، \(q_2=+16\,\mu\text{C}\)`,
+      String.raw`\(q_1=-16\,\mu\text{C}\) ، \(q_2=+32\,\mu\text{C}\)`,
+      String.raw`\(q_1=-16\,\mu\text{C}\) ، \(q_2=-32\,\mu\text{C}\)`
+    ],
+    answer: 1,
+    explain: "الخطوط تدخل في الشحنة 1 (سالبة) وتخرج من الشحنة 2 (موجبة)، وعدد الخطوط عند الشحنة 1 أكبر بكثير (وتدخل إليها خطوط قادمة من بعيد)، فمقدارها أكبر: \\(q_1=-32\\,\\mu\\text{C}\\) و \\(q_2=+16\\,\\mu\\text{C}\\)."
+  },
+  {
+    label: "8 (أ)", img: "8", tag: "تحديد إشارة الشحنات من خطوط المجال",
+    text: "ما إشارة كل من الشحنات 1 و 2 و 3 في الشكل؟",
+    options: [
+      "الشحنات الثلاث جميعها موجبة",
+      "الشحنتان 1 و 3 موجبتان والشحنة 2 سالبة",
+      "الشحنتان 1 و 3 سالبتان والشحنة 2 موجبة",
+      "الشحنات الثلاث جميعها سالبة"
+    ],
+    answer: 0,
+    explain: "الأسهم تخرج من كل من الشحنات الثلاث إلى الخارج، فجميعها موجبة. ويؤكد ذلك أن الخطوط تتنافر ولا تتصل بين الشحنات (توجد نقطتا اتزان بينها يكون المجال عندهما صفراً)."
+  },
+  {
+    label: "8 (ب)", img: "8", tag: "النسبة بين الشحنات من عدد الخطوط",
+    text: String.raw`في الشكل نفسه: أوجد النسبة \(\dfrac{q_1}{q_2}\).`,
+    options: [
+      String.raw`\(\dfrac{1}{3}\)`,
+      String.raw`\(3\)`,
+      String.raw`\(\dfrac{1}{2}\)`,
+      String.raw`\(1\)`
+    ],
+    answer: 0,
+    explain: String.raw`عدد خطوط المجال يتناسب طردياً مع مقدار الشحنة. تخرج من الشحنة 1 نحو 10 خطوط ومن الشحنة 2 نحو 30 خطاً، إذن \(\dfrac{q_1}{q_2}=\dfrac{10}{30}=\dfrac{1}{3}\).`
+  },
+  {
+    label: "8 (ج)", img: "8", tag: "حساب الشحنات من النسبة بين خطوط المجال",
+    text: String.raw`في الشكل نفسه: إذا كان \(|q_1|=6.0\,\text{nC}\) فأوجد \(q_2\) و \(q_3\).`,
+    options: [
+      String.raw`\(q_2=+18\,\text{nC}\) ، \(q_3=+6.0\,\text{nC}\)`,
+      String.raw`\(q_2=+2.0\,\text{nC}\) ، \(q_3=+6.0\,\text{nC}\)`,
+      String.raw`\(q_2=+18\,\text{nC}\) ، \(q_3=-6.0\,\text{nC}\)`,
+      String.raw`\(q_2=+18\,\text{nC}\) ، \(q_3=+18\,\text{nC}\)`
+    ],
+    answer: 0,
+    explain: String.raw`\(q_2=3\,q_1=3\times6.0=+18\,\text{nC}\). الشحنتان 1 و 3 لهما نفس عدد الخطوط (نحو 10 خطوط لكل منهما)، فهما متساويتان ومتشابهتان في الإشارة: \(q_3=q_1=+6.0\,\text{nC}\).`
+  },
+  {
+    label: "9", img: null, tag: "خصائص خطوط المجال الكهربائي (عبارات)",
+    text: String.raw`أي من العبارات التالية صحيحة؟
+      <div class="stmts">
+        <div><b>(1)</b> تشير خطوط المجال الكهربائي إلى الداخل باتجاه الشحنات السالبة.</div>
+        <div><b>(2)</b> تشكل خطوط المجال الكهربائي دوائر حول الشحنات الموجبة.</div>
+        <div><b>(3)</b> قد تتقاطع خطوط المجال الكهربائي.</div>
+        <div><b>(4)</b> تشير خطوط المجال الكهربائي إلى الخارج من الشحنات الموجبة.</div>
+        <div><b>(5)</b> الشحنة النقطية الموجبة المنطلقة من السكون سوف تتسارع في البداية على طول مماس لخط المجال الكهربائي عند تلك النقطة.</div>
+      </div>`,
+    options: [
+      "العبارتان (1) و (4) فقط",
+      "العبارات (1) و (4) و (5)",
+      "العبارتان (2) و (3) فقط",
+      "العبارات (1) و (2) و (4) و (5)"
+    ],
+    answer: 1,
+    explain: "الصحيح: العبارات (1) و (4) و (5). الخطوط تدخل في الشحنات السالبة وتخرج من الموجبة، والشحنة الموجبة الساكنة تتسارع في اتجاه المجال أي على طول المماس لخط المجال. أما (2) فخاطئة لأن الخطوط لا تشكل دوائر (تخرج من الشحنة في خطوط شعاعية)، و (3) خاطئة لأن الخطوط لا تتقاطع أبداً."
+  }
+];
+
+/* =====================================================================
+   أدوات مساعدة
+   ===================================================================== */
+const $ = (id) => document.getElementById(id);
+const LETTERS = ["أ", "ب", "ج", "د", "هـ", "و"];
+
+let studentId = "";
+let studentName = "";
+let startTime = 0;
+let timerHandle = null;
+let examActive = false;
+let submitted = false;
+let lastPayload = null;
+
+$("meta-line").textContent = `${EXAM_META.subject} • ${EXAM_META.module} • ${EXAM_META.lesson}`;
+
+function typeset(nodes) {
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise(nodes).catch(() => {});
+  } else {
+    // MathJax لم يُحمَّل بعد: ننتظر انتهاء التحميل
+    window.addEventListener("load", () => {
+      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise(nodes).catch(() => {});
+    }, { once: true });
+  }
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60), r = s % 60;
+  return String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
+}
+
+/* =====================================================================
+   تسجيل الدخول (GET)
+   ===================================================================== */
+async function login() {
+  const errEl = $("login-error");
+  const btn = $("login-btn");
+  const id = $("student-id").value.trim();
+  errEl.textContent = "";
+
+  if (!id) { errEl.textContent = "من فضلك أدخل كود الطالب."; return; }
+
+  btn.disabled = true;
+  const oldText = btn.textContent;
+  btn.textContent = "جارٍ التحقق...";
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?student_id=${encodeURIComponent(id)}`, { method: "GET", redirect: "follow" });
+    const data = await res.json();
+
+    if (data && data.valid === true) {
+      studentId = id;
+      studentName = data.student_name || "";
+      startExam();
+    } else {
+      errEl.textContent = (data && data.error) ? data.error : "الكود غير مسجل في قاعدة البيانات.";
+    }
+  } catch (e) {
+    errEl.textContent = "تعذر الاتصال بالخادم. تأكد من الإنترنت وحاول مرة أخرى.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = oldText;
+  }
+}
+
+/* =====================================================================
+   تحميل الصور (يجرّب الامتدادات تلقائياً)
+   ===================================================================== */
+function tryLoadImage(name, alt, onOk, onFail) {
+  let i = 0;
+  const img = new Image();
+  img.alt = alt;
+  img.onload = () => onOk(img);
+  img.onerror = () => {
+    i++;
+    if (i < IMG_EXTS.length) img.src = `${IMG_DIR}/${name}.${IMG_EXTS[i]}`;
+    else if (onFail) onFail();
+  };
+  img.src = `${IMG_DIR}/${name}.${IMG_EXTS[0]}`;
+}
+
+function loadMainImage(wrap, name) {
+  tryLoadImage(name, `شكل السؤال ${name}`, (img) => {
+    img.addEventListener("click", () => openLightbox(img.src));
+    wrap.appendChild(img);
+    wrap.classList.remove("hidden");
+  });
+  /* لا توجد صورة لهذا السؤال: يبقى الحاوي مخفياً */
+}
+
+function loadOptionImage(holder, name, letter) {
+  tryLoadImage(name, `الشكل (${letter})`, (img) => {
+    holder.textContent = "";
+    holder.appendChild(img);
+  }, () => {
+    holder.innerHTML = `<span class="missing">الشكل (${letter}) — الصورة غير موجودة: ${IMG_DIR}/${name}</span>`;
+  });
+}
+
+/* =====================================================================
+   عرض الامتحان
+   ===================================================================== */
+function buildQuestions() {
+  const root = $("questions");
+  root.innerHTML = "";
+
+  QUESTIONS.forEach((q, idx) => {
+    const card = document.createElement("article");
+    card.className = "card q-card";
+    card.dataset.index = idx;
+    card.dataset.tag = q.tag;
+
+    const hasOptImgs = Array.isArray(q.optImgs) && q.optImgs.length > 0;
+
+    const opts = q.options.map((o, i) => `
+      <label class="opt" data-i="${i}">
+        <input type="radio" name="q${idx}" value="${i}">
+        <span class="letter">${LETTERS[i]}</span>
+        <span class="otext${hasOptImgs ? " optimg" : ""}">${o}</span>
+      </label>`).join("");
+
+    card.innerHTML = `
+      <div class="q-head"><span class="q-num">السؤال ${q.label}</span></div>
+      <div class="q-text">${q.text}</div>
+      <div class="q-img-wrap hidden"></div>
+      <div class="options${hasOptImgs ? " grid-img" : ""}">${opts}</div>
+      <div class="feedback hidden"></div>`;
+
+    root.appendChild(card);
+
+    if (q.img) loadMainImage(card.querySelector(".q-img-wrap"), q.img);
+    if (hasOptImgs) {
+      card.querySelectorAll(".optimg").forEach((holder, i) => {
+        loadOptionImage(holder, q.optImgs[i], LETTERS[i]);
+      });
+    }
+  });
+
+  root.addEventListener("change", updateProgress);
+  typeset([root]);
+}
+
+function updateProgress() {
+  let answered = 0;
+  QUESTIONS.forEach((_, idx) => {
+    if (document.querySelector(`input[name="q${idx}"]:checked`)) answered++;
+  });
+  $("progress-bar").style.width = (answered / QUESTIONS.length * 100) + "%";
+  if (!submitted) $("submit-msg").textContent = `تمت الإجابة على ${answered} من ${QUESTIONS.length}`;
+}
+
+function startExam() {
+  $("login-section").classList.add("hidden");
+  $("exam-section").classList.remove("hidden");
+  $("welcome").textContent = `مرحباً بك: ${studentName}`;
+
+  buildQuestions();
+  updateProgress();
+
+  examActive = true;
+  startTime = Date.now();
+  timerHandle = setInterval(() => {
+    $("timer").textContent = fmtTime(Math.floor((Date.now() - startTime) / 1000));
+  }, 1000);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* =====================================================================
+   التصحيح والإرسال (POST)
+   ===================================================================== */
+/* نص الخيار كما يُسجَّل في الشيت (بدون وسوم HTML أو علامات MathJax) */
+function plain(html, q, i) {
+  if (Array.isArray(q.optImgs) && q.optImgs.length) return `الشكل (${LETTERS[i]}) - ${q.optImgs[i]}`;
+  return String(html)
+    .replace(/<[^>]*>/g, "")
+    .replace(/\\\(|\\\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function gradeExam() {
+  let score = 0;
+  const weaknesses = new Set();
+  const details = [];
+
+  QUESTIONS.forEach((q, idx) => {
+    const card = document.querySelector(`.q-card[data-index="${idx}"]`);
+    const checked = card.querySelector(`input[name="q${idx}"]:checked`);
+    const selected = checked ? parseInt(checked.value, 10) : -1;
+    const isCorrect = selected === q.answer;
+    if (isCorrect) score++; else weaknesses.add(q.tag);
+
+    details.push({
+      question: q.label,
+      selected: selected >= 0 ? LETTERS[selected] : null,
+      selectedText: selected >= 0 ? plain(q.options[selected], q, selected) : "",
+      correct: LETTERS[q.answer],
+      correctText: plain(q.options[q.answer], q, q.answer),
+      isCorrect,
+      tag: q.tag
+    });
+  });
+
+  return { score, weaknesses: [...weaknesses], details };
+}
+
+function showFeedback() {
+  QUESTIONS.forEach((q, idx) => {
+    const card = document.querySelector(`.q-card[data-index="${idx}"]`);
+    card.classList.add("locked");
+    card.querySelectorAll("input").forEach((i) => (i.disabled = true));
+
+    const checked = card.querySelector(`input[name="q${idx}"]:checked`);
+    const selected = checked ? parseInt(checked.value, 10) : -1;
+    const ok = selected === q.answer;
+
+    card.querySelectorAll(".opt").forEach((el) => {
+      const i = parseInt(el.dataset.i, 10);
+      if (i === q.answer) el.classList.add("correct");
+      else if (i === selected) el.classList.add("wrong");
+    });
+
+    const fb = card.querySelector(".feedback");
+    fb.classList.remove("hidden", "ok", "bad");
+    fb.classList.add(ok ? "ok" : "bad");
+    const title = ok
+      ? "✅ إجابة صحيحة"
+      : (selected === -1
+          ? `❌ لم تجب على هذا السؤال — الإجابة الصحيحة: ${LETTERS[q.answer]}`
+          : `❌ إجابة خاطئة — الإجابة الصحيحة: ${LETTERS[q.answer]}`);
+    fb.innerHTML = `<div class="fb-title">${title}</div><div class="fb-explain">${q.explain}</div>`;
+  });
+  typeset([$("questions")]);
+}
+
+function showBanner(score, total, timeSeconds) {
+  const pct = Math.round((score / total) * 100);
+  const banner = $("result-banner");
+  banner.classList.remove("hidden");
+  banner.innerHTML = `
+    <div class="label">نتيجتك يا ${studentName}</div>
+    <div class="score">${score} / ${total}</div>
+    <div class="pct">${pct}% • الوقت: ${fmtTime(timeSeconds)}</div>
+    <div id="sync-status">جارٍ حفظ النتيجة...</div>
+    <div><button id="retry-btn" class="btn hidden">إعادة محاولة الحفظ</button></div>`;
+  $("retry-btn").addEventListener("click", () => sendResult(lastPayload));
+}
+
+function setSync(msg) { const el = $("sync-status"); if (el) el.textContent = msg; }
+
+async function sendResult(payload) {
+  const retry = $("retry-btn");
+  if (retry) retry.classList.add("hidden");
+  setSync("جارٍ حفظ النتيجة...");
+
+  const body = JSON.stringify(payload);
+  try {
+    /* text/plain يتجنب طلب preflight مع Google Apps Script */
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body,
+      redirect: "follow"
+    });
+    let data = null;
+    try { data = await res.json(); } catch (_) { /* قد لا يكون الرد JSON */ }
+
+    if (res.ok && !(data && (data.error || data.success === false))) {
+      setSync("✅ تم حفظ نتيجتك بنجاح");
+    } else {
+      setSync("⚠️ تعذر حفظ النتيجة: " + ((data && data.error) || "خطأ في الخادم"));
+      if (retry) retry.classList.remove("hidden");
+    }
+  } catch (e) {
+    /* احتمال حجب CORS: نعيد الإرسال بوضع no-cors (لا يمكن قراءة الرد) */
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body
+      });
+      setSync("✅ تم إرسال نتيجتك");
+    } catch (e2) {
+      setSync("⚠️ تعذر الاتصال بالخادم، لم يتم حفظ النتيجة");
+      if (retry) retry.classList.remove("hidden");
+    }
+  }
+}
+
+async function submitExam() {
+  if (submitted) return;
+
+  let unanswered = 0;
+  QUESTIONS.forEach((_, idx) => {
+    if (!document.querySelector(`input[name="q${idx}"]:checked`)) unanswered++;
+  });
+  if (unanswered > 0 &&
+      !confirm(`لم تجب على ${unanswered} سؤال/أسئلة. هل تريد إنهاء الامتحان وإرسال النتيجة؟`)) return;
+
+  const btn = $("submit-btn");
+  btn.disabled = true;
+  btn.textContent = "جارٍ التصحيح والإرسال...";
+
+  submitted = true;
+  examActive = false;
+  clearInterval(timerHandle);
+  const timeSeconds = Math.floor((Date.now() - startTime) / 1000);
+
+  const { score, weaknesses, details } = gradeExam();
+  const total = QUESTIONS.length;
+
+  showFeedback();
+  showBanner(score, total, timeSeconds);
+  $("submit-msg").textContent = "";
+  btn.classList.add("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  lastPayload = {
+    studentId: String(studentId),
+    subject: EXAM_META.subject,
+    module: EXAM_META.module,
+    lesson: EXAM_META.lesson,
+    assessmentType: EXAM_META.type,
+    score,
+    total,
+    timeSeconds,
+    weaknesses,
+    details
+  };
+  await sendResult(lastPayload);
+}
+
+/* =====================================================================
+   تكبير الصور
+   ===================================================================== */
+function openLightbox(src) {
+  const lb = $("lightbox");
+  lb.querySelector("img").src = src;
+  lb.classList.add("open");
+  lb.setAttribute("aria-hidden", "false");
+}
+$("lightbox").addEventListener("click", () => {
+  $("lightbox").classList.remove("open");
+  $("lightbox").setAttribute("aria-hidden", "true");
+});
+
+/* =====================================================================
+   ربط الأحداث
+   ===================================================================== */
+$("login-btn").addEventListener("click", login);
+$("student-id").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+$("submit-btn").addEventListener("click", submitExam);
+
+window.addEventListener("beforeunload", (e) => {
+  if (examActive && !submitted) { e.preventDefault(); e.returnValue = ""; }
+});
+</script>
+</body>
+</html>
